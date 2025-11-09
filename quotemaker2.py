@@ -192,12 +192,20 @@ else:
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
+
+Subtotal: ₹{fd['subtotal']:.2f}
+Shipping (incl. markup): ₹{shipping:.2f}
+GST (5%): ₹{gst:.2f}
+Total: ₹{final_total:.2f}
+"""
+            
 import json
 import streamlit as st
 
 # --- Display the quote ---
 st.subheader("Generated Quote")
 st.text_area("Final Quote Preview:", message, height=300)
+st.markdown(message)
 
 # --- Properly escaped JS copy button ---
 escaped_message = json.dumps(message)  # JSON-safe escaping
