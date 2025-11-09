@@ -192,38 +192,43 @@ else:
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
+import json
+import streamlit as st
+
 # --- Display the quote ---
 st.subheader("Generated Quote")
 st.text_area("Final Quote Preview:", message, height=300)
 
-# --- Safe Copy Button (HTML + JS) ---
-escaped_message = json.dumps(message)  # safely escape quotes/newlines
-copy_button_html = f"""
-    <button id="copyBtn"
-        onclick='navigator.clipboard.writeText({escaped_message});
-                 const btn = document.getElementById("copyBtn");
-                 btn.innerText="✅ Copied!";
-                 setTimeout(()=>btn.innerText="📋 Copy Quote",1500);'
-        style="
-            background-color:#f0f2f6;
-            color:#000;
-            padding:10px 16px;
-            border:none;
-            border-radius:8px;
-            font-size:16px;
-            cursor:pointer;
-            box-shadow:0 2px 5px rgba(0,0,0,0.1);
-            margin-top:10px;
-        ">
-        📋 Copy Quote
-    </button>
-"""
+# --- Properly escaped JS copy button ---
+escaped_message = json.dumps(message)  # JSON-safe escaping
+
+copy_button_html = (
+    '<button id="copyBtn" '
+    'onclick="navigator.clipboard.writeText(' + escaped_message + '); '
+    'const btn = document.getElementById(\'copyBtn\'); '
+    'btn.innerText=\'✅ Copied!\'; '
+    'setTimeout(()=>btn.innerText=\'📋 Copy Quote\',1500);" '
+    'style="'
+    'background-color:#f0f2f6; '
+    'color:#000; '
+    'padding:10px 16px; '
+    'border:none; '
+    'border-radius:8px; '
+    'font-size:16px; '
+    'cursor:pointer; '
+    'box-shadow:0 2px 5px rgba(0,0,0,0.1); '
+    'margin-top:10px;'
+    '">'
+    '📋 Copy Quote'
+    '</button>'
+)
 
 st.components.v1.html(copy_button_html, height=80)
 
-# --- Reset for new quote if needed ---
+# --- Reset for new quote ---
 if st.button("Create New Quote"):
     st.session_state.quote_ready = False
     st.session_state.courier_data = []
     st.session_state.form_data = {}
     st.rerun()
+
