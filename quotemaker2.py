@@ -182,7 +182,13 @@ else:
         fd = st.session_state.form_data
 
         # --- Calculate totals ---
-        shipping = selected_courier["rate"]*1.1
+        if (selected_courier["rate"])<200:
+                shipping = selected_courier["rate"]+10
+        elif: (selected_courier["rate"])<500
+                shipping = selected_courier["rate"]+30
+        else:
+                shipping = selected_courier["rate"]+50
+            
         gst = (fd["subtotal"] + shipping) * 0.05
         final_total = fd["subtotal"] + shipping + gst
 
