@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-import st_copy_button as cb
+from st_copy_button import st_copy_button
 from dotenv import load_dotenv
 import os
 
@@ -209,7 +209,7 @@ Final Total: ₹{final_total:.2f}
 """
 
         st.text_area("Generated Quote", message, height=300)
-        cb.st_copy_button(message, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
+        st_copy_button(message, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
 
         # Reset for new quote if needed
         if st.button("Create New Quote"):
