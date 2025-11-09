@@ -197,13 +197,13 @@ st.subheader("Generated Quote")
 st.text_area("Final Quote Preview:", message, height=300)
 
 # --- Safe Copy Button (HTML + JS) ---
-escaped_message = message.replace("`", "\\`").replace("$", "\\$")
+escaped_message = json.dumps(message)  # safely escape quotes/newlines
 copy_button_html = f"""
     <button id="copyBtn"
-        onclick="navigator.clipboard.writeText(`{escaped_message}`);
-                 const btn = document.getElementById('copyBtn');
-                 btn.innerText='✅ Copied!';
-                 setTimeout(()=>btn.innerText='📋 Copy Quote',1500);"
+        onclick='navigator.clipboard.writeText({escaped_message});
+                 const btn = document.getElementById("copyBtn");
+                 btn.innerText="✅ Copied!";
+                 setTimeout(()=>btn.innerText="📋 Copy Quote",1500);'
         style="
             background-color:#f0f2f6;
             color:#000;
@@ -227,4 +227,3 @@ if st.button("Create New Quote"):
     st.session_state.courier_data = []
     st.session_state.form_data = {}
     st.rerun()
-
