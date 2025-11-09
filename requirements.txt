@@ -1,4 +1,4 @@
 streamlit
 requests
 python-dotenv
-st-copy
+st-copy-button
