@@ -230,10 +230,10 @@ copy_button = f"""
 """
 components.html(copy_button, height=60)
 
-        # Reset for new quote if needed
-        if st.button("Create New Quote"):
-            st.session_state.quote_ready = False
-            st.session_state.courier_data = []
-            st.session_state.form_data = {}
-            st.rerun()
+# Reset for new quote if needed
+if st.button("Create New Quote"):
+    st.session_state.quote_ready = False
+    st.session_state.courier_data = []
+    st.session_state.form_data = {}
+    st.rerun()
 
