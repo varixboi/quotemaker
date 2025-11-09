@@ -184,7 +184,7 @@ else:
         # --- Calculate totals ---
         if (selected_courier["rate"])<200:
                 shipping = selected_courier["rate"]+10
-        elif: (selected_courier["rate"])<500
+        elif (selected_courier["rate"])<500:
                 shipping = selected_courier["rate"]+30
         else:
                 shipping = selected_courier["rate"]+50
