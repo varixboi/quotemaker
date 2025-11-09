@@ -210,9 +210,11 @@ Estimated Delivery: {selected_courier['etd']}
 Final Total: ₹{final_total:.2f}
 """
 
-        st.text_area("Generated Quote", message, height=300)
-        copy_button = f"""
-    <button onclick="navigator.clipboard.writeText(`{message}`)"
+copy_button = f"""
+    <button id="copyBtn" 
+    onclick="navigator.clipboard.writeText(`{message}`);
+             this.innerText='✅ Copied!';
+             setTimeout(()=>this.innerText='📋 Copy Quote',1500);"
     style="
         background-color:#f0f2f6;
         color:#000;
