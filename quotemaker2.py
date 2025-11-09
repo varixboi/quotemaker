@@ -5,9 +5,9 @@ from dotenv import load_dotenv
 import os
 
 # --- Load credentials ---
-load_dotenv()
-EMAIL = os.getenv("SHIPROCKET_EMAIL")
-PASSWORD = os.getenv("SHIPROCKET_PASSWORD")
+
+EMAIL = st.secrets["SHIPROCKET_EMAIL"]
+PASSWORD = st.secrets["SHIPROCKET_PASSWORD"]
 
 # --- Product list ---
 product_list=[
