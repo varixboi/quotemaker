@@ -1,8 +1,10 @@
 import streamlit as st
 import requests
-from st_copy_button import st_copy_button
+
 from dotenv import load_dotenv
 import os
+
+import streamlit.components.v1 as components
 
 # --- Load credentials ---
 
@@ -209,7 +211,22 @@ Final Total: ₹{final_total:.2f}
 """
 
         st.text_area("Generated Quote", message, height=300)
-        st_copy_button(message, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
+        copy_button = f"""
+    <button onclick="navigator.clipboard.writeText(`{message}`)"
+    style="
+        background-color:#f0f2f6;
+        color:#000;
+        padding:10px 16px;
+        border:none;
+        border-radius:8px;
+        font-size:16px;
+        cursor:pointer;
+        box-shadow:0 2px 5px rgba(0,0,0,0.1);
+    ">
+    📋 Copy Quote
+    </button>
+"""
+components.html(copy_button, height=60)
 
         # Reset for new quote if needed
         if st.button("Create New Quote"):
