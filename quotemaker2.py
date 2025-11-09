@@ -1,15 +1,14 @@
 import streamlit as st
 import requests
-import json
+from st_copy import copy_button
 from dotenv import load_dotenv
 import os
-
-import streamlit.components.v1 as components
 
 # --- Load credentials ---
 
 EMAIL = st.secrets["SHIPROCKET_EMAIL"]
 PASSWORD = st.secrets["SHIPROCKET_PASSWORD"]
+
 
 # --- Product list ---
 product_list=[
@@ -192,51 +191,31 @@ else:
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
-
-Subtotal: ₹{fd['subtotal']:.2f}
-Shipping (incl. markup): ₹{shipping:.2f}
-GST (5%): ₹{gst:.2f}
-Total: ₹{final_total:.2f}
+Order Details:
 """
-            
-import json
-import streamlit as st
+        for i, p in enumerate(product_list):
+            if fd["qty"][i] > 0:
+                price = p["sample_price"] if fd["total_pieces"] < 10 else p["bulk_price"]
+                total_price = price * fd["qty"][i]
+                message += f"{p['pname']}\n₹{price} × {fd['qty'][i]} = ₹{total_price}\n\n"
 
-# --- Display the quote ---
-st.subheader("Generated Quote")
-st.text_area("Final Quote Preview:", message, height=300)
-st.markdown(message)
+        message += f"""
+Total Pieces: {fd['total_pieces']}
+Total Weight: {fd['total_weight']:.2f} kg
+Subtotal: ₹{fd['subtotal']:.2f}
+Shipping via {selected_courier['courier_name']}: ₹{shipping:.2f}
+GST (5%): ₹{gst:.2f}
+Estimated Delivery: {selected_courier['etd']}
+Final Total: ₹{final_total:.2f}
+"""
 
-# --- Properly escaped JS copy button ---
-escaped_message = json.dumps(message)  # JSON-safe escaping
+        st.text_area("Generated Quote", message, height=300)
+        copy_button(message, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
 
-copy_button_html = (
-    '<button id="copyBtn" '
-    'onclick="navigator.clipboard.writeText(' + escaped_message + '); '
-    'const btn = document.getElementById(\'copyBtn\'); '
-    'btn.innerText=\'✅ Copied!\'; '
-    'setTimeout(()=>btn.innerText=\'📋 Copy Quote\',1500);" '
-    'style="'
-    'background-color:#f0f2f6; '
-    'color:#000; '
-    'padding:10px 16px; '
-    'border:none; '
-    'border-radius:8px; '
-    'font-size:16px; '
-    'cursor:pointer; '
-    'box-shadow:0 2px 5px rgba(0,0,0,0.1); '
-    'margin-top:10px;'
-    '">'
-    '📋 Copy Quote'
-    '</button>'
-)
-
-st.components.v1.html(copy_button_html, height=80)
-
-# --- Reset for new quote ---
-if st.button("Create New Quote"):
-    st.session_state.quote_ready = False
-    st.session_state.courier_data = []
-    st.session_state.form_data = {}
-    st.rerun()
+        # Reset for new quote if needed
+        if st.button("Create New Quote"):
+            st.session_state.quote_ready = False
+            st.session_state.courier_data = []
+            st.session_state.form_data = {}
+            st.rerun()
 
