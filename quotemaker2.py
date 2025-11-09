@@ -192,45 +192,36 @@ else:
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
-Order Details:
-"""
-        for i, p in enumerate(product_list):
-            if fd["qty"][i] > 0:
-                price = p["sample_price"] if fd["total_pieces"] < 10 else p["bulk_price"]
-                total_price = price * fd["qty"][i]
-                message += f"{p['pname']}\n₹{price} × {fd['qty'][i]} = ₹{total_price}\n\n"
+# --- Display the quote ---
+st.subheader("Generated Quote")
+st.text_area("Final Quote Preview:", message, height=300)
 
-        message += f"""
-Total Pieces: {fd['total_pieces']}
-Total Weight: {fd['total_weight']:.2f} kg
-Subtotal: ₹{fd['subtotal']:.2f}
-Shipping via {selected_courier['courier_name']}: ₹{shipping:.2f}
-GST (5%): ₹{gst:.2f}
-Estimated Delivery: {selected_courier['etd']}
-Final Total: ₹{final_total:.2f}
-"""
-
-copy_button = f"""
-    <button id="copyBtn" 
-    onclick="navigator.clipboard.writeText(`{message}`);
-             this.innerText='✅ Copied!';
-             setTimeout(()=>this.innerText='📋 Copy Quote',1500);"
-    style="
-        background-color:#f0f2f6;
-        color:#000;
-        padding:10px 16px;
-        border:none;
-        border-radius:8px;
-        font-size:16px;
-        cursor:pointer;
-        box-shadow:0 2px 5px rgba(0,0,0,0.1);
-    ">
-    📋 Copy Quote
+# --- Safe Copy Button (HTML + JS) ---
+escaped_message = message.replace("`", "\\`").replace("$", "\\$")
+copy_button_html = f"""
+    <button id="copyBtn"
+        onclick="navigator.clipboard.writeText(`{escaped_message}`);
+                 const btn = document.getElementById('copyBtn');
+                 btn.innerText='✅ Copied!';
+                 setTimeout(()=>btn.innerText='📋 Copy Quote',1500);"
+        style="
+            background-color:#f0f2f6;
+            color:#000;
+            padding:10px 16px;
+            border:none;
+            border-radius:8px;
+            font-size:16px;
+            cursor:pointer;
+            box-shadow:0 2px 5px rgba(0,0,0,0.1);
+            margin-top:10px;
+        ">
+        📋 Copy Quote
     </button>
 """
-components.html(copy_button, height=60)
 
-# Reset for new quote if needed
+st.components.v1.html(copy_button_html, height=80)
+
+# --- Reset for new quote if needed ---
 if st.button("Create New Quote"):
     st.session_state.quote_ready = False
     st.session_state.courier_data = []
