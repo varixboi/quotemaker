@@ -2,3 +2,4 @@ streamlit
 requests
 python-dotenv
 st-copy-button
+json
