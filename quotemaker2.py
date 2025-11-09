@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from st_copy import copy_button
+from st_copy_button import copy_button
 from dotenv import load_dotenv
 import os
 
