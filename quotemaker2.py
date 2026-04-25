@@ -223,8 +223,6 @@ Estimated Delivery: {etd}
 Notes:
 {notes}
 """
-"""
-
         st.text_area("Generated Quote",msg,height=300)
         copy_button(msg, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
 
