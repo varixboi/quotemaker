@@ -205,7 +205,7 @@ for i, p in enumerate(product_list):
         msg += f"{p['pname']} | {qty[i]} x ₹{price} | ₹{total_price}\n"
 
 # --- Totals ---
-msg += f""
+msg += f"""
 -----------------------------------
 Subtotal: ₹{subtotal}
 Shipping: ₹{shipping}
