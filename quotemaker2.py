@@ -185,31 +185,44 @@ else:
         final = subtotal + shipping + extra + gst
 
         # Message
-        msg=f"""
+# --- MESSAGE ---
+msg = f"""
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
 Order Details:
 """
-        for i,p in enumerate(product_list):
-            if qty[i]>0:
-                if total_pieces<10:
-                    price=p["sample_price"]
-                else:
-                    price = p["vendor_price"] if fd["order_type"]=="Vendor" else p["event_price"]
 
-                msg+=f"{p['pname']} ₹{price} x {qty[i]}\n"
+for i, p in enumerate(product_list):
+    if qty[i] > 0:
+        if total_pieces < 10:
+            price = p["sample_price"]
+        else:
+            price = p["vendor_price"] if fd["order_type"] == "Vendor" else p["event_price"]
 
-        msg+=f"""
+        total_price = price * qty[i]
+
+        msg += f"{p['pname']} | {qty[i]} x ₹{price} | ₹{total_price}\n"
+
+# --- Totals ---
+msg += f"""
+-----------------------------------
 Subtotal: ₹{subtotal}
 Shipping: ₹{shipping}
 Extra Charges: ₹{extra}
-GST (5%): ₹{gst:.2f}
+"""
+
+# ✅ GST on EVERYTHING
+gst = (subtotal + shipping + extra) * 0.05
+final = subtotal + shipping + extra + gst
+
+msg += f"""GST (5%): ₹{gst:.2f}
 Final Total: ₹{final:.2f}
 Estimated Delivery: {etd}
 
 Notes:
 {notes}
+"""
 """
 
         st.text_area("Generated Quote",msg,height=300)
