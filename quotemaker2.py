@@ -5,83 +5,26 @@ from dotenv import load_dotenv
 import os
 
 # --- Load credentials ---
-
 EMAIL = st.secrets["SHIPROCKET_EMAIL"]
 PASSWORD = st.secrets["SHIPROCKET_PASSWORD"]
 
-
 # --- Product list ---
 product_list=[
-        {"pname":"240GSM French Terry OS",
-         "bulk_price":205,
-         "sample_price":250,
-         "weight":0.33},
-
-        {"pname":"210GSM French Terry OS",         
-         "bulk_price":195,
-         "sample_price":240,
-         "weight":0.28},
-
-        {"pname":"180GSM Oversized Tshirt",
-         "bulk_price":185,
-         "sample_price":230,
-         "weight":0.27},
-
-        {"pname":"180GSM Regular Fit Tshirt",
-         "bulk_price":150,
-         "sample_price":200,
-         "weight":0.22},
-
-        {"pname":"180GSM Non-Biowash Tshirt",
-         "bulk_price":115,
-         "sample_price":150,
-         "weight":0.22},
-
-        {"pname":"320GSM Hoodie",
-         "bulk_price":350,
-         "sample_price":400,
-         "weight":0.59},
-
-        {"pname":"320GSM Sweatshirt",
-         "bulk_price":280,
-         "sample_price":330,
-         "weight":0.49},
-
-        {"pname":"420GSM OS Hoodie",
-         "bulk_price":420,
-         "sample_price":500,
-         "weight":0.79},
-
-         {"pname":"420GSM OS Hoodie - II",
-         "bulk_price":460,
-         "sample_price":550,
-         "weight":0.79},
-
-        {"pname":"Varsity Jacket",
-         "bulk_price":400,
-         "sample_price":450,
-         "weight":0.59},
-
-        {"pname":"240GSM Acid Wash OS",
-         "bulk_price":250,
-         "sample_price":300,
-         "weight":0.28},
-
-        {"pname":"180GSM Acid Wash RF",
-         "bulk_price":190,
-         "sample_price":250,
-         "weight":0.22},
-
-        {"pname":"Cotton Polo",
-         "bulk_price":210,
-         "sample_price":250,
-         "weight":0.28},
-
-        {"pname":"Premium Cotton Polo",
-         "bulk_price":250,
-         "sample_price":300,
-         "weight":0.28},
-    ]
+    {"pname":"240GSM French Terry OS","bulk_price":205,"sample_price":250,"weight":0.33},
+    {"pname":"210GSM French Terry OS","bulk_price":195,"sample_price":240,"weight":0.28},
+    {"pname":"180GSM Oversized Tshirt","bulk_price":185,"sample_price":230,"weight":0.27},
+    {"pname":"180GSM Regular Fit Tshirt","bulk_price":150,"sample_price":200,"weight":0.22},
+    {"pname":"180GSM Non-Biowash Tshirt","bulk_price":115,"sample_price":150,"weight":0.22},
+    {"pname":"320GSM Hoodie","bulk_price":350,"sample_price":400,"weight":0.59},
+    {"pname":"320GSM Sweatshirt","bulk_price":280,"sample_price":330,"weight":0.49},
+    {"pname":"420GSM OS Hoodie","bulk_price":420,"sample_price":500,"weight":0.79},
+    {"pname":"420GSM OS Hoodie - II","bulk_price":460,"sample_price":550,"weight":0.79},
+    {"pname":"Varsity Jacket","bulk_price":400,"sample_price":450,"weight":0.59},
+    {"pname":"240GSM Acid Wash OS","bulk_price":250,"sample_price":300,"weight":0.28},
+    {"pname":"180GSM Acid Wash RF","bulk_price":190,"sample_price":250,"weight":0.22},
+    {"pname":"Cotton Polo","bulk_price":210,"sample_price":250,"weight":0.28},
+    {"pname":"Premium Cotton Polo","bulk_price":250,"sample_price":300,"weight":0.28},
+]
 
 st.header("Quote Maker for Subtlewear")
 st.caption("Enter your order details and generate a customer-ready quote.")
@@ -115,7 +58,6 @@ if not st.session_state.quote_ready:
                 st.subheader("Polo Tshirts")
 
             qty[i]=st.number_input(product_list[i]["pname"],step=1)
-        
 
         submitted = st.form_submit_button("Get Courier Options")
 
@@ -123,13 +65,13 @@ if not st.session_state.quote_ready:
         total_pieces = sum(qty)
         subtotal = 0
         total_weight = 0
+
         for i, p in enumerate(product_list):
             if qty[i] > 0:
                 price = p["sample_price"] if total_pieces < 10 else p["bulk_price"]
                 subtotal += qty[i] * price
                 total_weight += qty[i] * p["weight"]
 
-        # Store the basic form data
         st.session_state.form_data = {
             "cname": cname,
             "pincode": pincode,
@@ -153,6 +95,7 @@ if not st.session_state.quote_ready:
                 "weight": round(total_weight, 2),
                 "cod": 0,
             }
+
             est_response = requests.get(estimate_url, headers=headers, params=params)
             est_data = est_response.json()
 
@@ -162,33 +105,56 @@ if not st.session_state.quote_ready:
                 st.rerun()
             else:
                 st.warning("No courier options available.")
-
         else:
-            st.error("Shiprocket login failed. Please check credentials.")
+            st.error("Shiprocket login failed.")
+
+# --- Step 2: Shipping Selection (UPDATED) ---
 else:
-    # --- Step 2: Courier Selection Form ---
-    couriers = [
-        f"{c['courier_name']} - ₹{c['rate']} ({c['etd']})"
-        for c in st.session_state.courier_data
-    ]
-    with st.form("courier_form"):
-        selected = st.selectbox("Select Courier Option:", couriers)
+    fd = st.session_state.form_data
+
+    with st.form("shipping_form"):
+        mode = st.radio("Select Shipping Mode:", ["Courier", "Custom"])
+
+        selected = None
+        custom_shipping = 0
+
+        if mode == "Courier":
+            couriers = [
+                f"{c['courier_name']} - ₹{c['rate']} ({c['etd']})"
+                for c in st.session_state.courier_data
+            ]
+            selected = st.selectbox("Select Courier Option:", couriers)
+        else:
+            custom_shipping = st.number_input("Enter Custom Shipping Amount (₹)", min_value=0)
+            st.caption("Use this to override courier pricing or give special rates.")
+
         confirm = st.form_submit_button("Generate Final Quote")
 
     if confirm:
-        selected_courier = next(
-            c for c in st.session_state.courier_data if f"{c['courier_name']} - ₹{c['rate']} ({c['etd']})" == selected
-        )
-        fd = st.session_state.form_data
 
-        # --- Calculate totals ---
-        if (selected_courier["rate"])<200:
-                shipping = selected_courier["rate"]+10
-        elif (selected_courier["rate"])<500:
-                shipping = selected_courier["rate"]+30
+        # --- Shipping logic ---
+        if mode == "Courier":
+            selected_courier = next(
+                c for c in st.session_state.courier_data
+                if f"{c['courier_name']} - ₹{c['rate']} ({c['etd']})" == selected
+            )
+
+            if selected_courier["rate"] < 200:
+                shipping = selected_courier["rate"] + 10
+            elif selected_courier["rate"] < 500:
+                shipping = selected_courier["rate"] + 30
+            else:
+                shipping = selected_courier["rate"] + 50
+
+            courier_name = selected_courier["courier_name"]
+            etd = selected_courier["etd"]
+
         else:
-                shipping = selected_courier["rate"]+50
-            
+            shipping = custom_shipping
+            courier_name = "Custom Shipping"
+            etd = "As communicated"
+
+        # --- GST & Final Total ---
         gst = (fd["subtotal"] + shipping) * 0.05
         final_total = fd["subtotal"] + shipping + gst
 
@@ -199,6 +165,7 @@ Pincode: {fd['pincode']}
 
 Order Details:
 """
+
         for i, p in enumerate(product_list):
             if fd["qty"][i] > 0:
                 price = p["sample_price"] if fd["total_pieces"] < 10 else p["bulk_price"]
@@ -209,19 +176,17 @@ Order Details:
 Total Pieces: {fd['total_pieces']}
 Total Weight: {fd['total_weight']:.2f} kg
 Subtotal: ₹{fd['subtotal']:.2f}
-Shipping via {selected_courier['courier_name']}: ₹{shipping:.2f}
+Shipping ({courier_name}): ₹{shipping:.2f}
 GST (5%): ₹{gst:.2f}
-Estimated Delivery: {selected_courier['etd']}
+Estimated Delivery: {etd}
 Final Total: ₹{final_total:.2f}
 """
 
         st.text_area("Generated Quote", message, height=300)
         copy_button(message, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
 
-        # Reset for new quote if needed
         if st.button("Create New Quote"):
             st.session_state.quote_ready = False
             st.session_state.courier_data = []
             st.session_state.form_data = {}
             st.rerun()
-
