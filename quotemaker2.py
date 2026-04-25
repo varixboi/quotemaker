@@ -98,7 +98,7 @@ elif not st.session_state.shipping_done:
 
     fd = st.session_state.form_data
 
-    # Fetch couriers once
+    # Fetch couriers
     if not st.session_state.courier_data:
         login = requests.post(
             "https://apiv2.shiprocket.in/v1/external/auth/login",
@@ -140,7 +140,6 @@ else:
 
     with st.form("final_form"):
 
-        # Shipping
         if mode=="Courier":
             couriers = [
                 f"{c['courier_name']} - ₹{c['rate']} ({c['etd']})"
@@ -150,7 +149,6 @@ else:
         else:
             custom_shipping = st.number_input("Custom Shipping Amount (₹)", 0)
 
-        # Extras
         extra = st.number_input("Extra Charges (₹)", 0)
         notes = st.text_area("Notes")
 
@@ -161,68 +159,53 @@ else:
         total_pieces = fd["total_pieces"]
 
         subtotal=0
-        for i,p in enumerate(product_list):
-            if qty[i]>0:
-                if total_pieces<10:
-                    price = p["sample_price"]
-                else:
-                    price = p["vendor_price"] if fd["order_type"]=="Vendor" else p["event_price"]
 
-                subtotal += price*qty[i]
-
-        # Shipping
-        if mode=="Courier":
-            c = next(x for x in st.session_state.courier_data if f"{x['courier_name']} - ₹{x['rate']} ({x['etd']})"==selected)
-            shipping = c["rate"]
-            etd = c["etd"]
-            cname = c["courier_name"]
-        else:
-            shipping = custom_shipping
-            etd = "As communicated"
-            cname = "Custom"
-
-        gst = (subtotal + shipping + extra)*0.05
-        final = subtotal + shipping + extra + gst
-
-        # Message
-# --- MESSAGE ---
-msg = f"""
+        # --- MESSAGE ---
+        msg = f"""
 Customer: {fd['cname']}
 Pincode: {fd['pincode']}
 
 Order Details:
 """
 
-for i, p in enumerate(product_list):
-    if qty[i] > 0:
-        if total_pieces < 10:
-            price = p["sample_price"]
+        for i,p in enumerate(product_list):
+            if qty[i]>0:
+                if total_pieces<10:
+                    price=p["sample_price"]
+                else:
+                    price = p["vendor_price"] if fd["order_type"]=="Vendor" else p["event_price"]
+
+                total_price = price * qty[i]
+                subtotal += total_price
+
+                msg += f"{p['pname']} | {qty[i]} x ₹{price} | ₹{total_price}\n"
+
+        # Shipping
+        if mode=="Courier":
+            c = next(x for x in st.session_state.courier_data if f"{x['courier_name']} - ₹{x['rate']} ({x['etd']})"==selected)
+            shipping = c["rate"]
+            etd = c["etd"]
         else:
-            price = p["vendor_price"] if fd["order_type"] == "Vendor" else p["event_price"]
+            shipping = custom_shipping
+            etd = "As communicated"
 
-        total_price = price * qty[i]
+        # GST on ALL
+        gst = (subtotal + shipping + extra) * 0.05
+        final = subtotal + shipping + extra + gst
 
-        msg += f"{p['pname']} | {qty[i]} x ₹{price} | ₹{total_price}\n"
-
-# --- Totals ---
-msg += f"""
+        msg += f"""
 -----------------------------------
 Subtotal: ₹{subtotal}
 Shipping: ₹{shipping}
 Extra Charges: ₹{extra}
-"""
-
-# ✅ GST on EVERYTHING
-gst = (subtotal + shipping + extra) * 0.05
-final = subtotal + shipping + extra + gst
-
-msg += f"""GST (5%): ₹{gst:.2f}
+GST (5%): ₹{gst:.2f}
 Final Total: ₹{final:.2f}
 Estimated Delivery: {etd}
 
 Notes:
 {notes}
 """
+
         st.text_area("Generated Quote",msg,height=300)
         copy_button(msg, tooltip="Copy Quote", copied_label="Copied!", icon="📋")
 
